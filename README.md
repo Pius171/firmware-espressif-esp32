@@ -10,16 +10,45 @@ Edge Impulse enables developers to create the next generation of intelligent dev
 
 - Espressif ESP32 based development boards, preferably ESP-EYE (ESP32) and FireBeetle Board (ESP32). Using with other boards is possible, but code modifications is needed. For more on that read **Using with other ESP32 boards**.
 
+### This is for ESP32 Fish Eye
+But you can apply the same approach to other ESP32 Cameras.
+just change the camera model in the ei_camera.h file. Then build and flash
+![alt text](image.png)
 ### Tools
 Install ESP IDF v5.1.1, following the instructions for your OS from [this page](https://docs.espressif.com/projects/esp-idf/en/v5.1.1/esp32/get-started/index.html#installation-step-by-step). You need this exact version - future versions might work, but not tested.
 
 ### Building the application
+#### 1. Download ESP-IDF version 5.1.1
+
+#### 2. Run `install.bat` First
+
+1. Open your command prompt.
+2. Navigate to the ESP-IDF folder:
+```cmd
+cd C:\Users\DELL\esp\v5.5.2\esp-idf
+
+```
+
+
+3. Run the installer:
+```cmd
+install.bat
+
+```
+
+
+*Wait for this to finish completely. It will download the necessary tools.*
+
+4. **Only after `install.bat` finishes successfully**, run `export.bat`:
+```cmd
+export.bat
+```
+
 Then from the firmware folder execute:
 ```bash
-get_idf
-clear && idf.py build
+ idf.py build
 ```
-```get_idf``` is an alias for export.sh script that sets up ESP IDF environment variables. Read more about it [here](https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32/get-started/index.html#step-4-set-up-the-environment-variables).
+
 
 ### Flash
 
