@@ -1,8 +1,33 @@
-# Edge Impulse firmware for Espressif ESP32
+# Edge Impulse firmware for Espressif ESP32 (I2S Microphone)
+This fork has been modified to work with an esp32 wroom 32 board connected to the INMP441 i2s microphone, using the pinout below:
 
-Edge Impulse enables developers to create the next generation of intelligent device solutions with embedded Machine Learning. This repository contains the Edge Impulse firmware for the Espressif ESP32 based development boards, specifically ESP-EYE (ESP32) and FireBeetle Board (ESP32). These devices support Edge Impulse device features, including ingestion and inferencing.
 
-**Note: Do you just want to use this development board with Edge Impulse? No need to build this firmware. See the instructions [here](https://docs.edgeimpulse.com/docs/espressif-esp32) for a prebuilt firmware and instructions. Or, you can use the [data forwarder](https://docs.edgeimpulse.com/docs/cli-data-forwarder) to capture data from any sensor.**
+## Wiring Diagram
+
+| INMP441 Pin | ESP32 Pin (GPIO) | Function |
+| --- | --- | --- |
+| **VDD** | **3.3V** | Power (Do not use 5V) |
+| **GND** | **GND** | Ground |
+| **SCK** | **GPIO 26** | Serial Clock (BCLK) |
+| **WS** | **GPIO 32** | Word Select (LRCK) |
+| **SD** | **GPIO 33** | Serial Data (OUT) |
+| **L/R** | **GND** | Left/Right Channel Select |
+
+---
+
+## How to
+- clone this repo to your pc
+- download and install esp-idf V5.1.1
+- run ` idf.py build`
+- run `idf.py -p COMX flash` to flash your firmware to your esp32
+
+
+[work on the whole readme more]
+- show how to to just flash the binary
+- show how to build
+- show how I use menu config and has to configure partitions
+- do write up for deep tech africa
+
 
 ## Requirements
 
