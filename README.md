@@ -16,61 +16,84 @@ This fork has been modified to work with an esp32 wroom 32 board connected to th
 ---
 
 ## How to
+You can either just flash the exisiting binary file, build the source code yourself or clone the original repo from edge impulse.
+### Flashing existing binary file using esptool
+- clone this repo to your pc
+-  
+```cmd
+esptool.py --chip esp32 --port COM3 --baud 460800 write_flash -z 0x1000 "C:\Users\DELL\Documents\firmware-espressif-esp32\build\ei_firmware_esp32.bin"
+```
+- run edge impulse dameaon `edge-impulse-daemon`
+
+### Building the source code
 - clone this repo to your pc
 - download and install esp-idf V5.1.1
-- run ` idf.py build`
+- run `idf.py build`
 - run `idf.py -p COMX flash` to flash your firmware to your esp32
 
+### Using the source code from edge impulse
+#### Step 1:  clone this repo https://github.com/edgeimpulse/firmware-espressif-esp32.git to your pc
 
-[work on the whole readme more]
-- show how to to just flash the binary
-- show how to build
-- show how I use menu config and has to configure partitions
-- do write up for deep tech africa
-
-
-## Requirements
-
-### Hardware
-
-- Espressif ESP32 based development boards, preferably ESP-EYE (ESP32) and FireBeetle Board (ESP32). Using with other boards is possible, but code modifications is needed. For more on that read **Using with other ESP32 boards**.
-
-### Tools
-Install ESP IDF v5.1.1, following the instructions for your OS from [this page](https://docs.espressif.com/projects/esp-idf/en/v5.1.1/esp32/get-started/index.html#installation-step-by-step). You need this exact version - future versions might work, but not tested.
-
-### Building the application
-Then from the firmware folder execute:
-```bash
-get_idf
-clear && idf.py build
+#### Step 2: update the partition.csv file with the conetents below
+```csv
+# Name,   Type, SubType, Offset,  Size, Flags
+nvs,      data, nvs,     ,        0x6000,
+phy_init, data, phy,     ,        0x1000,
+factory,  app,  factory, ,        0x1F0000,
+data,     data, fat,     ,        0x200000,
 ```
-```get_idf``` is an alias for export.sh script that sets up ESP IDF environment variables. Read more about it [here](https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32/get-started/index.html#step-4-set-up-the-environment-variables).
 
-### Flash
+*Note: This gives you a large 2MB data partition to store your audio samples from the INMP441.*
 
-Connect the ESP32 board to your computer.
+---
 
-Run:
-   ```bash
-   idf.py -p /dev/ttyUSB0 flash monitor
-   ```
+#### Step 3: Configure Flash and Partitions in Menuconfig
 
-Where ```/dev/ttyUSB0``` needs to be changed to actual port where ESP32 is connected on your system.
+You need to tell the build system to use the full 4MB of your chip and your new CSV file.
 
-### Serial connection
+1. Open configuration: `idf.py menuconfig`
+2. **Set Flash Size:**
+* Go to **Serial Flasher Config** -> **Flash size**.
+* Select **4MB**.
 
-Use screen, minicom or Serial monitor in Arduino IDE to set up a serial connection over USB. The following UART settings are used: 115200 baud, 8N1.
 
-### Using with other ESP32 boards
+3. **Set Partition Table:**
+* Go to **Partition Table**.
+* Change **Partition Table Config** to **Custom partition table CSV**.
+* Ensure **Custom partition table CSV file** is set to `partitions.csv`.
 
-ESP32 is a very popular chip both in a community projects and in industry, due to its high performance, low price and large amount of documentation/support available. There are other camera enabled development boards based on ESP32, which can use Edge Impulse firmware after applying certain changes, e.g.
 
-- AI-Thinker ESP-CAM
-- M5STACK ESP32 PSRAM Timer Camera X (OV3660)
-- M5STACK ESP32 Camera Module Development Board (OV2640)
+4. **Save and Exit:** Press `S` to save, then `Esc` until you are back at the command line.
 
-The pins used for camera connection on different development boards are not the same, therefore you will need to change the #define [here](https://github.com/edgeimpulse/firmware-espressif-esp32/blob/main/edge-impulse/ingestion-sdk-platform/sensors/ei_camera.h#L29) to fit your development board, compile and flash the firmware. Specifically for AI-Thinker ESP-CAM, since this board needs an external USB to TTL Serial Cable to upload the code/communicate with the board, the data transfer baud rate must be changed to 115200 [here](https://github.com/edgeimpulse/firmware-espressif-esp32/blob/main/edge-impulse/ingestion-sdk-platform/espressif_esp32/ei_device_espressif_esp32.h#35).
+---
 
-The analog sensor and LIS3DH accelerometer can be used on any other development board without changes, as long as the interface pins are not changed. If I2C/ADC pins that accelerometer/analog sensor are connected to are different, from described in Sensors available section, you will need to [change the values](https://github.com/AIWintermuteAI/LIS3DHTR_ESP-IDF/blob/641bda8c3e4b706a2365fe87dd4d925f96ea3f8c/src/include/LIS3DHTR.h#L31) in LIS3DHTR component for ESP32, compile and flash it to your board.
+#### Step 4: Deep Clean and Flash
 
-Additionally, since Edge Impulse firmware is open-source and available to public, if you have made modifications/added new sensors capabilities, we encourage you to make a PR in firmware repository!
+Since the previous flash was using a 2MB layout on 4MB hardware, we should wipe the chip entirely to prevent "ghost" data from causing issues.
+
+1. **Erase everything:**
+```bash
+idf.py erase-flash
+
+```
+
+
+2. **Build and Flash fresh:**
+```bash
+idf.py build flash monitor
+
+```
+
+
+
+---
+
+#### Step 4: Run the Edge Impulse daemon
+
+Once the `monitor` shows the ESP32 is running without crashing, exit the monitor (`Ctrl + ]`) and run the daemon:
+
+```bash
+edge-impulse-daemon
+
+```
+
